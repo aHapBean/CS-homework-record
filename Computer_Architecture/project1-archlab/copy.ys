@@ -1,0 +1,62 @@
+# name: 
+# ID  : 
+# copy.ys
+    .pos 0
+init:
+    irmovl Stack, %esp
+    irmovl Stack, %ebp
+    call Main
+    halt
+
+.align 4
+# Source block
+src:
+    .long 0x00a
+    .long 0x0b0
+    .long 0xc00
+# Destination
+dest:
+    .long 0x111
+    .long 0x222
+    .long 0x333
+
+Main:   pushl %ebp
+    rrmovl %esp, %ebp 
+    irmovl $3,%edx
+    pushl %edx              # push parameters
+    irmovl dest, %edx
+    pushl %edx
+    irmovl src, %edx
+    pushl %edx
+    call copy_block         # copy_block(*src, *dest, len)
+    rrmovl %ebp,%esp 
+    popl %ebp 
+    ret
+
+copy_block:   pushl %ebp
+    rrmovl %esp, %ebp
+
+    mrmovl 8(%ebp), %esi    # %esi = src
+    mrmovl 12(%ebp), %edi   # %edi = dst
+    mrmovl 16(%ebp), %ecx   # %ecx = len
+    xorl %eax, %eax         # store the return value
+    andl %ecx, %ecx
+    je ZERO
+Loop:   mrmovl (%esi), %ebx # %ebx <- *(src)
+    irmovl $4, %edx
+    addl %edx, %esi         # src++
+
+    rmmovl %ebx, (%edi)     # *(dst) <- %ebx
+    addl %edx, %edi
+    xorl %ebx, %eax         # %eax <- %ebx ^ %eax
+    irmovl $1, %edx
+    subl %edx, %ecx         # len--
+    jne Loop
+
+ZERO:   rrmovl %ebp, %esp
+    popl %ebp 
+    ret
+
+
+    .pos 0x400
+Stack:

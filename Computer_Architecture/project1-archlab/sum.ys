@@ -1,0 +1,48 @@
+# name:  
+# ID  : 
+# sum.ys
+    .pos 0
+init:
+    irmovl Stack, %esp
+    irmovl Stack, %ebp
+    call Main
+    halt
+# Sample linked list
+    .align 4 
+ele1:
+    .long 0x00a
+    .long ele2
+ele2:
+    .long 0x0b0
+    .long ele3
+ele3:
+    .long 0xc00
+    .long 0
+
+Main:   pushl %ebp 
+    rrmovl %esp, %ebp 
+
+    irmovl ele1,%edx
+    pushl %edx
+    call sum                # sum(*head)
+    rrmovl %ebp,%esp 
+    popl %ebp 
+    ret
+
+sum:   pushl %ebp
+    rrmovl %esp, %ebp
+    mrmovl 8(%ebp), %ecx    # %ecx <- head
+    xorl %eax, %eax
+    andl %ecx, %ecx         # check if %ecx == NULL
+    je End
+Loop:   mrmovl (%ecx), %esi # %esi <- *head
+    addl %esi, %eax         # %eax = %eax + %esi
+    mrmovl 4(%ecx), %ecx    # *head = head->next
+    andl %ecx, %ecx         
+    jne Loop
+End:    rrmovl %ebp, %esp
+    popl %ebp 
+    ret
+
+    .pos 0x100
+Stack: 
